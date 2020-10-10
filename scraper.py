@@ -1,9 +1,10 @@
 from bs4 import BeautifulSoup
 import requests
 import re
+import csv
 
 
-ticker = "9885.T"
+ticker_list = ["9885.T", "2480.T"]
 
 
 def clean_string(string):
@@ -124,32 +125,36 @@ class BalanceSheet():
         self.t_liabilities = value
 
 
-ticker_information = Information(ticker)
-ticker_income_statement = IncomeStatement(ticker)
-ticker_balance_sheet = BalanceSheet(ticker)
+def toCSV(ticker_list):
+    with open('net_net_data.csv', 'w', newline='') as csvfile:
+        spamwriter = csv.writer(csvfile, delimiter=' ',
+                                quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        spamwriter.writerow(['Ticker', 'PE', 'Price to NCA',
+                             'Price to Net Cash', 'Current Ratio'])
+        for ticker in ticker_list:
+            ticker_information = Information(ticker)
+            ticker_income_statement = IncomeStatement(ticker)
+            ticker_balance_sheet = BalanceSheet(ticker)
 
-price = ticker_information.get_price()
-shares_out = ticker_information.get_shares_out()
-market_cap = ticker_information.get_market_cap()
+            price = ticker_information.get_price()
+            shares_out = ticker_information.get_shares_out()
+            market_cap = ticker_information.get_market_cap()
 
-net_income = ticker_income_statement.get_net_income()
+            net_income = ticker_income_statement.get_net_income()
 
-cash_and_eq = ticker_balance_sheet.get_cash_and_eq()
-t_current_assets = ticker_balance_sheet.get_t_current_assets()
-t_liabilities = ticker_balance_sheet.get_t_liabilities()
+            cash_and_eq = ticker_balance_sheet.get_cash_and_eq()
+            t_current_assets = ticker_balance_sheet.get_t_current_assets()
+            t_liabilities = ticker_balance_sheet.get_t_liabilities()
 
-net_current_assets = t_current_assets - t_liabilities
-net_cash = cash_and_eq - t_liabilities
+            net_current_assets = t_current_assets - t_liabilities
+            net_cash = cash_and_eq - t_liabilities
 
-price_to_earnings = round(market_cap / net_income, 2)
-price_to_nca = round(market_cap / net_current_assets, 2)
-price_to_net_cash = round(market_cap / net_cash, 2)
-current_ratio = round(t_current_assets / t_liabilities, 2)
+            price_to_earnings = round(market_cap / net_income, 2)
+            price_to_nca = round(market_cap / net_current_assets, 2)
+            price_to_net_cash = round(market_cap / net_cash, 2)
+            current_ratio = round(t_current_assets / t_liabilities, 2)
+            spamwriter.writerow(
+                [ticker, price_to_earnings, price_to_nca, price_to_net_cash, current_ratio])
 
-print("Ticker: " + ticker)
-print("Price: " + str(price))
-print("Market Cap: " + str(market_cap))
-print("Price to Earnings: " + str(price_to_earnings))
-print("Price to Net Current Assets: " + str(price_to_nca))
-print("Price to Net Cash: " + str(price_to_net_cash))
-print("Current Ratio: " + str(current_ratio))
+
+toCSV(ticker_list)
