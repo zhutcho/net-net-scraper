@@ -1,12 +1,11 @@
-from lxml import html
 from bs4 import BeautifulSoup
 import requests
 import re
 
-BASE_URL = [
-    'https://www.reuters.com/companies/2408.T/financials/balance-sheet-quarterly',
-    'https://www.reuters.com/companies/OSN.OQ/financials/balance-sheet-quarterly',
-    'https://www.reuters.com/companies/9885.T/financials/balance-sheet-quarterly'
+TICKERS = [
+    '2408.T',
+    'OSN.OQ',
+    '9885.T'
 ]
 
 
@@ -24,8 +23,10 @@ def find_data(keyword):
     return data
 
 
-for url in BASE_URL:
-    page = requests.get(url)
+for ticker in TICKERS:
+    URL = 'https://www.reuters.com/companies/' + \
+        ticker + '/financials/balance-sheet-quarterly'
+    page = requests.get(URL)
     soup = BeautifulSoup(page.content, 'html.parser')
     results = soup.find(id='__next').prettify()
 
