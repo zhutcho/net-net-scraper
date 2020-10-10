@@ -6,47 +6,57 @@ import re
 ticker = "9885.T"
 
 
+def clean_string(string):
+    data = string.strip().replace(',', '')
+    data = re.sub("[^0123456789.]", '', data)
+    data = float(data)
+    return data
+
+
+def find_data(results, keyword, index):
+    data_pos = results.find(keyword)
+    data_replace = results[data_pos:data_pos + 500].replace("<", ">")
+    data_splice = data_replace.split(">")[index]
+    data = clean_string(data_splice)
+    return data
+
+
 class Information():
     results = ""
+    price = 0.0
     shares_out = 0.0
     market_cap = 0.0
 
     def __init__(self, ticker):
-        URL = 'https://www.reuters.com/companies/' + \
-            ticker + '/profile'
+        URL = 'https://www.reuters.com/companies/' + ticker + '/profile'
         page = requests.get(URL)
         soup = BeautifulSoup(page.content, 'html.parser')
         self.set_results(soup.find(id='__next').prettify())
 
-        self.set_shares_out(self.find_data("Shares Out (MIL)"))
-        self.set_market_cap(self.find_data("Market Cap (MIL)"))
-
-    def clean_string(self, string):
-        data = string.strip().replace(',', '')
-        data = re.sub("[^0123456789.]", '', data)
-        data = float(data)
-        return data
-
-    def find_data(self, keyword):
-        data_pos = self.results.find(keyword)
-        data_splice = self.results[data_pos:data_pos + 350].split(">")[4]
-        data = self.clean_string(data_splice)
-        return data
+        self.set_price(find_data(self.results, "Latest Trade", 4))
+        self.set_shares_out(find_data(self.results, "Shares Out (MIL)", 8))
+        self.set_market_cap(find_data(self.results, "Market Cap (MIL)", 8))
 
     def set_results(self, results):
         self.results = results
 
-    def set_shares_out(self, value):
-        self.shares_out = value
+    def get_price(self):
+        return self.price
 
-    def set_market_cap(self, value):
-        self.market_cap = value
+    def set_price(self, value):
+        self.price = value
 
     def get_shares_out(self):
         return self.shares_out
 
+    def set_shares_out(self, value):
+        self.shares_out = value
+
     def get_market_cap(self):
         return self.market_cap
+
+    def set_market_cap(self, value):
+        self.market_cap = value
 
 
 class IncomeStatement():
@@ -60,28 +70,17 @@ class IncomeStatement():
         soup = BeautifulSoup(page.content, 'html.parser')
         self.set_results(soup.find(id='__next').prettify())
 
-        self.set_net_income(self.find_data("Net Income After Taxes"))
-
-    def clean_string(self, string):
-        data = string.strip().replace(',', '')
-        data = re.sub("[^0123456789.]", '', data)
-        data = float(data)
-        return data
-
-    def find_data(self, keyword):
-        data_pos = self.results.find(keyword)
-        data_splice = self.results[data_pos:data_pos + 250].split(">")[3]
-        data = self.clean_string(data_splice)
-        return data
+        self.set_net_income(
+            find_data(self.results, "Net Income After Taxes", 6))
 
     def set_results(self, results):
         self.results = results
 
-    def set_net_income(self, value):
-        self.net_income = value
-
     def get_net_income(self):
         return self.net_income
+
+    def set_net_income(self, value):
+        self.net_income = value
 
 
 class BalanceSheet():
@@ -97,48 +96,39 @@ class BalanceSheet():
         soup = BeautifulSoup(page.content, 'html.parser')
         self.set_results(soup.find(id='__next').prettify())
 
-        self.set_cash_and_eq(self.find_data("Cash &amp; Equivalents"))
-        self.set_t_current_assets(self.find_data("Total Current Assets"))
-        self.set_t_liabilities(self.find_data("Total Liabilities"))
-
-    def clean_string(self, string):
-        data = string.strip().replace(',', '')
-        data = re.sub("[^0123456789.]", '', data)
-        data = float(data)
-        return data
-
-    def find_data(self, keyword):
-        data_pos = self.results.find(keyword)
-        data_splice = self.results[data_pos:data_pos + 250].split(">")[3]
-        data = self.clean_string(data_splice)
-        return data
+        self.set_cash_and_eq(
+            find_data(self.results, "Cash &amp; Equivalents", 6))
+        self.set_t_current_assets(
+            find_data(self.results, "Total Current Assets", 6))
+        self.set_t_liabilities(find_data(self.results, "Total Liabilities", 6))
 
     def set_results(self, results):
         self.results = results
 
-    def set_cash_and_eq(self, value):
-        self.cash_and_eq = value
-
-    def set_t_current_assets(self, value):
-        self.t_current_assets = value
-
-    def set_t_liabilities(self, value):
-        self.t_liabilities = value
-
     def get_cash_and_eq(self):
         return self.cash_and_eq
+
+    def set_cash_and_eq(self, value):
+        self.cash_and_eq = value
 
     def get_t_current_assets(self):
         return self.t_current_assets
 
+    def set_t_current_assets(self, value):
+        self.t_current_assets = value
+
     def get_t_liabilities(self):
         return self.t_liabilities
+
+    def set_t_liabilities(self, value):
+        self.t_liabilities = value
 
 
 ticker_information = Information(ticker)
 ticker_income_statement = IncomeStatement(ticker)
 ticker_balance_sheet = BalanceSheet(ticker)
 
+price = ticker_information.get_price()
 shares_out = ticker_information.get_shares_out()
 market_cap = ticker_information.get_market_cap()
 
@@ -148,12 +138,18 @@ cash_and_eq = ticker_balance_sheet.get_cash_and_eq()
 t_current_assets = ticker_balance_sheet.get_t_current_assets()
 t_liabilities = ticker_balance_sheet.get_t_liabilities()
 
-price = market_cap / shares_out
-
 net_current_assets = t_current_assets - t_liabilities
 net_cash = cash_and_eq - t_liabilities
 
-price_to_earnings = market_cap / net_income
-price_to_nca = market_cap / net_current_assets
-price_to_net_cash = market_cap / net_cash
-current_ratio = t_current_assets / t_liabilities
+price_to_earnings = round(market_cap / net_income, 2)
+price_to_nca = round(market_cap / net_current_assets, 2)
+price_to_net_cash = round(market_cap / net_cash, 2)
+current_ratio = round(t_current_assets / t_liabilities, 2)
+
+print("Ticker: " + ticker)
+print("Price: " + str(price))
+print("Market Cap: " + str(market_cap))
+print("Price to Earnings: " + str(price_to_earnings))
+print("Price to Net Current Assets: " + str(price_to_nca))
+print("Price to Net Cash: " + str(price_to_net_cash))
+print("Current Ratio: " + str(current_ratio))
