@@ -2,20 +2,24 @@ from bs4 import BeautifulSoup
 import requests
 import re
 
-TICKERS = [
-    '2408.T',
-    'OSN.OQ',
-    '9885.T'
-]
-
 
 class BalanceSheet():
 
     results = ""
-
     cash_and_eq = 0.0
     t_current_assets = 0.0
     t_liabilities = 0.0
+
+    def __init__(self, ticker):
+        URL = 'https://www.reuters.com/companies/' + \
+            ticker + '/financials/balance-sheet-quarterly'
+        page = requests.get(URL)
+        soup = BeautifulSoup(page.content, 'html.parser')
+        self.set_results(soup.find(id='__next').prettify())
+
+        self.set_cash_and_eq(self.find_data("Cash &amp; Equivalents"))
+        self.set_t_current_assets(self.find_data("Total Current Assets"))
+        self.set_t_liabilities(self.find_data("Total Liabilities"))
 
     def clean_string(self, string):
         data = string.strip().replace(',', '')
@@ -41,17 +45,6 @@ class BalanceSheet():
     def set_t_liabilities(self, value):
         self.t_liabilities = value
 
-    def __init__(self, ticker):
-        URL = 'https://www.reuters.com/companies/' + \
-            ticker + '/financials/balance-sheet-quarterly'
-        page = requests.get(URL)
-        soup = BeautifulSoup(page.content, 'html.parser')
-        self.set_results(soup.find(id='__next').prettify())
-
-        self.set_cash_and_eq(self.find_data("Cash &amp; Equivalents"))
-        self.set_t_current_assets(self.find_data("Total Current Assets"))
-        self.set_t_liabilities(self.find_data("Total Liabilities"))
-
     def get_cash_and_eq(self):
         return self.cash_and_eq
 
@@ -60,10 +53,3 @@ class BalanceSheet():
 
     def get_t_liabilities(self):
         return self.t_liabilities
-
-
-charle_co = BalanceSheet("9885.T")
-
-print(charle_co.get_cash_and_eq())
-print(charle_co.get_t_current_assets())
-print(charle_co.get_t_liabilities())
