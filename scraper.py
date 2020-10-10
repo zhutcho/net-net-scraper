@@ -4,7 +4,7 @@ import re
 import csv
 
 
-ticker_list = ["9885.T", "2480.T"]
+ticker_list = ['9885.T', '2480.T', 'OSN.OQ']
 
 
 def clean_string(string):
@@ -129,8 +129,8 @@ def toCSV(ticker_list):
     with open('net_net_data.csv', 'w', newline='') as csvfile:
         spamwriter = csv.writer(csvfile, delimiter=' ',
                                 quotechar='|', quoting=csv.QUOTE_MINIMAL)
-        spamwriter.writerow(['Ticker', 'PE', 'Price to NCA',
-                             'Price to Net Cash', 'Current Ratio'])
+        spamwriter.writerow(["ticker", "pe", "price to nca",
+                             "price to net cash", "current ratio"])
         for ticker in ticker_list:
             ticker_information = Information(ticker)
             ticker_income_statement = IncomeStatement(ticker)
