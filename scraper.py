@@ -2,21 +2,24 @@ from bs4 import BeautifulSoup
 import requests
 import re
 import csv
-
-
-ticker_list = ['9885.T', '2480.T', 'OSN.OQ']
+import itertools
+import random
+from time import sleep
 
 
 def clean_string(string):
     data = string.strip().replace(',', '')
-    data = re.sub("[^0123456789.]", '', data)
+    data = re.sub("[^0123456789.()]", '', data)
+    if data[0] == '(':
+        data = re.sub("[^0123456789.]", '', data)
+        data = '-' + data
     data = float(data)
     return data
 
 
 def find_data(results, keyword, index):
     data_pos = results.find(keyword)
-    data_replace = results[data_pos:data_pos + 500].replace("<", ">")
+    data_replace = results[data_pos:data_pos + 1000].replace("<", ">")
     data_splice = data_replace.split(">")[index]
     data = clean_string(data_splice)
     return data
@@ -72,7 +75,7 @@ class IncomeStatement():
         self.set_results(soup.find(id='__next').prettify())
 
         self.set_net_income(
-            find_data(self.results, "Net Income After Taxes", 6))
+            find_data(self.results, "Diluted Net Income", 6))
 
     def set_results(self, results):
         self.results = results
@@ -125,13 +128,24 @@ class BalanceSheet():
         self.t_liabilities = value
 
 
-def toCSV(ticker_list):
+def get_list():
+    with open('tickers.csv', newline='') as csvfile:
+        reader = csv.reader(csvfile)
+        data = list(itertools.chain.from_iterable(reader))[1:]
+        csvfile.close()
+    print(data)
+    return data
+
+
+def to_CSV():
+    ticker_list = get_list()
     with open('net_net_data.csv', 'w', newline='') as csvfile:
-        spamwriter = csv.writer(csvfile, delimiter=' ',
-                                quotechar='|', quoting=csv.QUOTE_MINIMAL)
-        spamwriter.writerow(["ticker", "pe", "price to nca",
-                             "price to net cash", "current ratio"])
+        writer = csv.writer(csvfile, delimiter=' ',
+                            quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        writer.writerow(["ticker", "pe", "price to nca",
+                         "price to net cash", "current ratio"])
         for ticker in ticker_list:
+            print(ticker)
             ticker_information = Information(ticker)
             ticker_income_statement = IncomeStatement(ticker)
             ticker_balance_sheet = BalanceSheet(ticker)
@@ -153,8 +167,9 @@ def toCSV(ticker_list):
             price_to_nca = round(market_cap / net_current_assets, 2)
             price_to_net_cash = round(market_cap / net_cash, 2)
             current_ratio = round(t_current_assets / t_liabilities, 2)
-            spamwriter.writerow(
+            writer.writerow(
                 [ticker, price_to_earnings, price_to_nca, price_to_net_cash, current_ratio])
+            sleep(random.randint(5, 20))
 
 
-toCSV(ticker_list)
+to_CSV()
