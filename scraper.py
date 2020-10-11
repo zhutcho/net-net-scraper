@@ -89,6 +89,7 @@ class IncomeStatement():
 
 class BalanceSheet():
     results = ""
+    date = ""
     cash_and_eq = 0.0
     t_current_assets = 0.0
     t_liabilities = 0.0
@@ -146,11 +147,8 @@ def to_CSV():
         for ticker in ticker_list:
             print(ticker)
             ticker_information = Information(ticker)
-            sleep(random.randint(0, 10))
             ticker_income_statement = IncomeStatement(ticker)
-            sleep(random.randint(0, 10))
             ticker_balance_sheet = BalanceSheet(ticker)
-            sleep(random.randint(0, 10))
 
             price = ticker_information.get_price()
             shares_out = ticker_information.get_shares_out()
@@ -171,7 +169,6 @@ def to_CSV():
             current_ratio = round(t_current_assets / t_liabilities, 2)
             writer.writerow([ticker] + [price_to_earnings] +
                             [price_to_nca] + [price_to_net_cash] + [current_ratio])
-            sleep(random.randint(30, 60))
 
 
 to_CSV()
