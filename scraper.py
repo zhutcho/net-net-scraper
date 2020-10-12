@@ -1,7 +1,6 @@
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from webdriver_manager.firefox import GeckoDriverManager
-import requests
 import re
 import csv
 import itertools
@@ -10,7 +9,10 @@ from time import sleep
 
 
 gecko_install = GeckoDriverManager().install()
-driver = webdriver.Firefox(executable_path=gecko_install)
+fireFoxOptions = webdriver.FirefoxOptions()
+fireFoxOptions.set_headless()
+driver = webdriver.Firefox(
+    executable_path=gecko_install, firefox_options=fireFoxOptions)
 
 
 def clean_string(string):
@@ -140,7 +142,9 @@ def to_CSV():
         for ticker in ticker_list:
             print(ticker)
             ticker_information = Information(ticker)
+            sleep(random.randint(2, 10))
             ticker_balance_sheet = BalanceSheet(ticker)
+            sleep(random.randint(2, 10))
 
             price = ticker_information.get_price()
             shares_out = ticker_information.get_shares_out()
@@ -161,8 +165,8 @@ def to_CSV():
                             [price_to_net_cash] + [current_ratio])
 
             sleep_count += 1
-            if sleep_count % 25 == 0:
-                sleep(240)
+            if sleep_count % 10 == 0:
+                sleep(random.randint(120))
     driver.close()
 
 
