@@ -9,10 +9,7 @@ from time import sleep
 
 
 gecko_install = GeckoDriverManager().install()
-fireFoxOptions = webdriver.FirefoxOptions()
-fireFoxOptions.set_headless(headless=True)
-driver = webdriver.Firefox(
-    executable_path=gecko_install, options=fireFoxOptions)
+driver = webdriver.Firefox(executable_path=gecko_install)
 
 
 def clean_string(string):
@@ -29,7 +26,6 @@ def find_data(results, keyword, index):
     data_pos = results.find(keyword)
     data_replace = results[data_pos:data_pos + 1000].replace('<', '>')
     data_splice = data_replace.split('>')[index]
-    print(data_splice)
     if keyword != "Price To Earnings (TTM)" and keyword != "Dividend (Yield %)":
         data = clean_string(data_splice)
     else:
