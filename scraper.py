@@ -90,8 +90,8 @@ class BalanceSheet():
     def __init__(self, ticker):
         URL = 'https://www.reuters.com/companies/' + \
             ticker + '/financials/balance-sheet-quarterly'
-        page = requests.get(URL)
-        soup = BeautifulSoup(page.content, 'html.parser')
+        driver.get(URL)
+        soup = BeautifulSoup(driver.page_source, 'html.parser')
         self.set_results(soup.find(id='__next').prettify())
 
         self.set_cash_and_eq(
@@ -127,7 +127,6 @@ def get_list():
         reader = csv.reader(csvfile)
         data = list(itertools.chain.from_iterable(reader))[1:]
         csvfile.close()
-    print(data)
     return data
 
 
