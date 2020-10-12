@@ -161,8 +161,9 @@ def to_CSV():
                             [price_to_net_cash] + [current_ratio])
 
             sleep_count += 1
-            if sleep_count % 40 == 0:
-                sleep(300)
+            if sleep_count % 25 == 0:
+                sleep(240)
+    driver.close()
 
 
 to_CSV()
