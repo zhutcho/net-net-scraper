@@ -1,10 +1,18 @@
 from bs4 import BeautifulSoup
+from selenium import webdriver
+from webdriver_manager.firefox import GeckoDriverManager
 import requests
 import re
 import csv
 import itertools
 import random
 from time import sleep
+
+
+gecko_install = GeckoDriverManager().install()
+driver = webdriver.Firefox(executable_path=gecko_install)
+driver2 = webdriver.Firefox(executable_path=gecko_install)
+driver3 = webdriver.Firefox(executable_path=gecko_install)
 
 
 def clean_string(string):
@@ -32,9 +40,9 @@ class Information():
     market_cap = 0.0
 
     def __init__(self, ticker):
-        URL = 'https://www.reuters.com/companies/' + ticker + '/profile'
-        page = requests.get(URL)
-        soup = BeautifulSoup(page.content, 'html.parser')
+        URL = 'https://www.reuters.com/companies/' + ticker
+        driver.get(URL)
+        soup = BeautifulSoup(driver.page_source, 'html.parser')
         self.set_results(soup.find(id='__next').prettify())
 
         self.set_price(find_data(self.results, "Latest Trade", 4))
@@ -70,8 +78,8 @@ class IncomeStatement():
     def __init__(self, ticker):
         URL = 'https://www.reuters.com/companies/' + \
             ticker + '/financials/income-statement-annual'
-        page = requests.get(URL)
-        soup = BeautifulSoup(page.content, 'html.parser')
+        driver2.get(URL)
+        soup = BeautifulSoup(driver2.page_source, 'html.parser')
         self.set_results(soup.find(id='__next').prettify())
 
         self.set_net_income(
@@ -97,8 +105,8 @@ class BalanceSheet():
     def __init__(self, ticker):
         URL = 'https://www.reuters.com/companies/' + \
             ticker + '/financials/balance-sheet-quarterly'
-        page = requests.get(URL)
-        soup = BeautifulSoup(page.content, 'html.parser')
+        driver3.get(URL)
+        soup = BeautifulSoup(driver3.page_source, 'html.parser')
         self.set_results(soup.find(id='__next').prettify())
 
         self.set_cash_and_eq(
@@ -150,6 +158,7 @@ def to_CSV():
             ticker_information = Information(ticker)
             ticker_income_statement = IncomeStatement(ticker)
             ticker_balance_sheet = BalanceSheet(ticker)
+            sleep(random.randint(2, 10))
 
             price = ticker_information.get_price()
             shares_out = ticker_information.get_shares_out()
