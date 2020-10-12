@@ -29,7 +29,8 @@ def find_data(results, keyword, index):
     data_pos = results.find(keyword)
     data_replace = results[data_pos:data_pos + 1000].replace('<', '>')
     data_splice = data_replace.split('>')[index]
-    if keyword != "Price To Earnings (TTM)":
+    print(data_splice)
+    if keyword != "Price To Earnings (TTM)" and keyword != "Dividend (Yield %)":
         data = clean_string(data_splice)
     else:
         data = data_splice.strip()
@@ -40,6 +41,7 @@ class Information():
     results = ""
     price = 0.0
     pe_ttm = 0.0
+    div_yield = 0.0
     shares_out = 0.0
     market_cap = 0.0
 
@@ -51,6 +53,7 @@ class Information():
 
         self.set_price(find_data(self.results, "Latest Trade", 4))
         self.set_pe_ttm(find_data(self.results, "Price To Earnings (TTM)", 8))
+        self.set_div_yield(find_data(self.results, "Dividend (Yield %)", 8))
         self.set_shares_out(find_data(self.results, "Shares Out (MIL)", 8))
         self.set_market_cap(find_data(self.results, "Market Cap (MIL)", 8))
 
@@ -68,6 +71,12 @@ class Information():
 
     def set_pe_ttm(self, value):
         self.pe_ttm = value
+
+    def get_div_yield(self):
+        return self.div_yield
+
+    def set_div_yield(self, value):
+        self.div_yield = value
 
     def get_shares_out(self):
         return self.shares_out
@@ -138,7 +147,7 @@ def to_CSV():
     with open('net_net_data.csv', 'w', newline='') as csvfile:
         writer = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
         writer.writerow(["ticker"] + ["pe (ttm)"] + ["price to nca"] +
-                        ["price to net cash"] + ["current ratio"])
+                        ["price to net cash"] + ["current ratio"] + ["dividend yield %"])
         for ticker in ticker_list:
             print(ticker)
             ticker_information = Information(ticker)
@@ -147,6 +156,7 @@ def to_CSV():
             sleep(random.randint(5, 10))
 
             price = ticker_information.get_price()
+            div_yield = ticker_information.get_div_yield()
             shares_out = ticker_information.get_shares_out()
             market_cap = ticker_information.get_market_cap()
 
@@ -162,7 +172,7 @@ def to_CSV():
             price_to_net_cash = round(market_cap / net_cash, 2)
             current_ratio = round(t_current_assets / t_liabilities, 2)
             writer.writerow([ticker] + [pe_ttm] + [price_to_nca] +
-                            [price_to_net_cash] + [current_ratio])
+                            [price_to_net_cash] + [current_ratio] + [div_yield])
 
             sleep_count += 1
             if sleep_count % 20 == 0:
