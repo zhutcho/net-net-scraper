@@ -11,8 +11,6 @@ from time import sleep
 
 gecko_install = GeckoDriverManager().install()
 driver = webdriver.Firefox(executable_path=gecko_install)
-driver2 = webdriver.Firefox(executable_path=gecko_install)
-# driver3 = webdriver.Firefox(executable_path=gecko_install)
 
 
 def clean_string(string):
@@ -29,9 +27,10 @@ def find_data(results, keyword, index):
     data_pos = results.find(keyword)
     data_replace = results[data_pos:data_pos + 1000].replace('<', '>')
     data_splice = data_replace.split('>')[index]
-    data = data_splice
     if keyword != "Price To Earnings (TTM)":
         data = clean_string(data_splice)
+    else:
+        data = data_splice.strip()
     return data
 
 
@@ -91,8 +90,8 @@ class BalanceSheet():
     def __init__(self, ticker):
         URL = 'https://www.reuters.com/companies/' + \
             ticker + '/financials/balance-sheet-quarterly'
-        driver2.get(URL)
-        soup = BeautifulSoup(driver2.page_source, 'html.parser')
+        page = requests.get(URL)
+        soup = BeautifulSoup(page.content, 'html.parser')
         self.set_results(soup.find(id='__next').prettify())
 
         self.set_cash_and_eq(
@@ -159,8 +158,12 @@ def to_CSV():
             price_to_nca = round(market_cap / net_current_assets, 2)
             price_to_net_cash = round(market_cap / net_cash, 2)
             current_ratio = round(t_current_assets / t_liabilities, 2)
-            writer.writerow([ticker] + [pe_ttm] +
-                            [price_to_nca] + [price_to_net_cash] + [current_ratio])
+            writer.writerow([ticker] + [pe_ttm] + [price_to_nca] +
+                            [price_to_net_cash] + [current_ratio])
+
+            sleep_count += 1
+            if sleep_count % 40 == 0:
+                sleep(300)
 
 
 to_CSV()
