@@ -166,7 +166,7 @@ def to_CSV():
 
             sleep_count += 1
             if sleep_count % 10 == 0:
-                sleep(random.randint(120))
+                sleep(120)
     driver.close()
 
 
