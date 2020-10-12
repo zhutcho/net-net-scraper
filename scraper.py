@@ -142,9 +142,9 @@ def to_CSV():
         for ticker in ticker_list:
             print(ticker)
             ticker_information = Information(ticker)
-            sleep(random.randint(2, 10))
+            sleep(random.randint(5, 10))
             ticker_balance_sheet = BalanceSheet(ticker)
-            sleep(random.randint(2, 10))
+            sleep(random.randint(5, 10))
 
             price = ticker_information.get_price()
             shares_out = ticker_information.get_shares_out()
@@ -165,8 +165,8 @@ def to_CSV():
                             [price_to_net_cash] + [current_ratio])
 
             sleep_count += 1
-            if sleep_count % 10 == 0:
-                sleep(120)
+            if sleep_count % 20 == 0:
+                sleep(600)
     driver.close()
 
 
