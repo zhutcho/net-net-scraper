@@ -10,9 +10,9 @@ from time import sleep
 
 gecko_install = GeckoDriverManager().install()
 fireFoxOptions = webdriver.FirefoxOptions()
-fireFoxOptions.set_headless()
+fireFoxOptions.set_headless(headless=True)
 driver = webdriver.Firefox(
-    executable_path=gecko_install, firefox_options=fireFoxOptions)
+    executable_path=gecko_install, options=fireFoxOptions)
 
 
 def clean_string(string):
