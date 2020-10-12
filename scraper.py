@@ -139,6 +139,7 @@ def get_list():
 
 
 def to_CSV():
+    sleep_count = 0
     ticker_list = get_list()
     with open('net_net_data.csv', 'w', newline='') as csvfile:
         writer = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
