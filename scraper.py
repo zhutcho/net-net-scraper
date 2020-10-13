@@ -141,16 +141,17 @@ def get_list():
 def to_CSV():
     sleep_count = 0
     ticker_list = get_list()
-    with open('net_net_data_2.csv', 'w', newline='') as csvfile:
+    with open('net_net_data_3.csv', 'w', newline='') as csvfile:
         writer = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
         writer.writerow(["ticker"] + ["pe (ttm)"] + ["price to nca"] +
                         ["price to net cash"] + ["current ratio"] + ["dividend yield %"])
         for ticker in ticker_list:
-            print(ticker)
+            sleep_count += 1
+            print(str(sleep_count) + '. ' + ticker)
             ticker_information = Information(ticker)
-            sleep(random.randint(5, 10))
+            sleep(random.random() * 5 + 10)
             ticker_balance_sheet = BalanceSheet(ticker)
-            sleep(random.randint(5, 10))
+            sleep(random.random() * 5 + 10)
 
             price = ticker_information.get_price()
             div_yield = ticker_information.get_div_yield()
@@ -171,9 +172,8 @@ def to_CSV():
             writer.writerow([ticker] + [pe_ttm] + [price_to_nca] +
                             [price_to_net_cash] + [current_ratio] + [div_yield])
 
-            sleep_count += 1
-            if sleep_count % 10 == 0:
-                sleep(100, 200)
+            if sleep_count % 6 == 0:
+                sleep(random.random() * 120 + 150)
     driver.close()
 
 
