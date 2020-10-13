@@ -10,6 +10,7 @@ from time import sleep
 
 gecko_install = GeckoDriverManager().install()
 driver = webdriver.Firefox(executable_path=gecko_install)
+driver_2 = webdriver.Firefox(executable_path=gecko_install)
 
 
 def clean_string(string):
@@ -97,8 +98,8 @@ class BalanceSheet():
     def __init__(self, ticker):
         URL = 'https://www.reuters.com/companies/' + \
             ticker + '/financials/balance-sheet-quarterly'
-        driver.get(URL)
-        soup = BeautifulSoup(driver.page_source, 'html.parser')
+        driver_2.get(URL)
+        soup = BeautifulSoup(driver_2.page_source, 'html.parser')
         self.set_results(soup.find(id='__next').prettify())
 
         self.set_cash_and_eq(
@@ -171,8 +172,8 @@ def to_CSV():
                             [price_to_net_cash] + [current_ratio] + [div_yield])
 
             sleep_count += 1
-            if sleep_count % 15 == 0:
-                sleep(600)
+            if sleep_count % 10 == 0:
+                sleep(100, 200)
     driver.close()
 
 
