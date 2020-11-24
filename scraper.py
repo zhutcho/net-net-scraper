@@ -144,7 +144,8 @@ def to_CSV():
     with open('net_net_data_3.csv', 'w', newline='') as csvfile:
         writer = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
         writer.writerow(["ticker"] + ["pe (ttm)"] + ["price to nca"] +
-                        ["price to net cash"] + ["current ratio"] + ["dividend yield %"])
+                        ["price to net cash"] + ["current ratio"] +
+                        ["dividend yield %"])
         for ticker in ticker_list:
             sleep_count += 1
             print(str(sleep_count) + '. ' + ticker)
