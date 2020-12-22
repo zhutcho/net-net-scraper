@@ -1,16 +1,18 @@
 from bs4 import BeautifulSoup
 from selenium import webdriver
-from webdriver_manager.firefox import GeckoDriverManager
+from selenium.webdriver.firefox.options import Options
+import requests
+from lxml.html import fromstring
 import re
 import csv
 import itertools
 import random
+from datetime import date
 from time import sleep
 
 
-gecko_install = GeckoDriverManager().install()
-driver = webdriver.Firefox(executable_path=gecko_install)
-driver_2 = webdriver.Firefox(executable_path=gecko_install)
+driver = webdriver.Firefox(executable_path="/Users/z_hutcho/geckodriver")
+driver_2 = webdriver.Firefox(executable_path="/Users/z_hutcho/geckodriver")
 
 
 def clean_string(string):
@@ -44,15 +46,27 @@ class Information():
 
     def __init__(self, ticker):
         URL = 'https://www.reuters.com/companies/' + ticker
-        driver.get(URL)
-        soup = BeautifulSoup(driver.page_source, 'html.parser')
-        self.set_results(soup.find(id='__next').prettify())
+        while True:
+            try:
+                driver.get(URL)
+                sleep(3)
+                soup = BeautifulSoup(driver.page_source, 'html.parser')
+                self.set_results(soup.find(id='__next').prettify())
 
-        self.set_price(find_data(self.results, "Latest Trade", 4))
-        self.set_pe_ttm(find_data(self.results, "Price To Earnings (TTM)", 8))
-        self.set_div_yield(find_data(self.results, "Dividend (Yield %)", 8))
-        self.set_shares_out(find_data(self.results, "Shares Out (MIL)", 8))
-        self.set_market_cap(find_data(self.results, "Market Cap (MIL)", 8))
+                self.set_price(find_data(self.results, "Latest Trade", 4))
+                self.set_pe_ttm(
+                    find_data(self.results, "Price To Earnings (TTM)", 8))
+                self.set_div_yield(
+                    find_data(self.results, "Dividend (Yield %)", 8))
+                self.set_shares_out(
+                    find_data(self.results, "Shares Out (MIL)", 8))
+                self.set_market_cap(
+                    find_data(self.results, "Market Cap (MIL)", 8))
+            except:
+                driver.get("https://www.reuters.com")
+                sleep(30)
+                continue
+            break
 
     def set_results(self, results):
         self.results = results
@@ -98,15 +112,24 @@ class BalanceSheet():
     def __init__(self, ticker):
         URL = 'https://www.reuters.com/companies/' + \
             ticker + '/financials/balance-sheet-quarterly'
-        driver_2.get(URL)
-        soup = BeautifulSoup(driver_2.page_source, 'html.parser')
-        self.set_results(soup.find(id='__next').prettify())
+        while True:
+            try:
+                driver_2.get(URL)
+                sleep(3)
+                soup = BeautifulSoup(driver_2.page_source, 'html.parser')
+                self.set_results(soup.find(id='__next').prettify())
 
-        self.set_cash_and_eq(
-            find_data(self.results, "Cash and Short Term Investments", 6))
-        self.set_t_current_assets(
-            find_data(self.results, "Total Current Assets", 6))
-        self.set_t_liabilities(find_data(self.results, "Total Liabilities", 6))
+                self.set_cash_and_eq(
+                    find_data(self.results, "Cash and Short Term Investments", 6))
+                self.set_t_current_assets(
+                    find_data(self.results, "Total Current Assets", 6))
+                self.set_t_liabilities(
+                    find_data(self.results, "Total Liabilities", 6))
+            except:
+                driver.get("https://www.reuters.com")
+                sleep(30)
+                continue
+            break
 
     def set_results(self, results):
         self.results = results
@@ -141,14 +164,15 @@ def get_list():
 def to_CSV():
     sleep_count = 0
     ticker_list = get_list()
-    with open('net_net_data_3.csv', 'w', newline='') as csvfile:
+    today = date.today()
+    with open('net_net_data_' + today.strftime("%d_%m_%y") + '.csv', 'w', newline='') as csvfile:
         writer = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
         writer.writerow(["ticker"] + ["pe (ttm)"] + ["price to nca"] +
                         ["price to net cash"] + ["current ratio"] +
                         ["dividend yield %"])
         for ticker in ticker_list:
             sleep_count += 1
-            print(str(sleep_count) + '. ' + ticker)
+            print(str(sleep_count) + ". " + ticker)
             ticker_information = Information(ticker)
             sleep(random.random() * 5 + 10)
             ticker_balance_sheet = BalanceSheet(ticker)
@@ -174,7 +198,7 @@ def to_CSV():
                             [price_to_net_cash] + [current_ratio] + [div_yield])
 
             if sleep_count % 6 == 0:
-                sleep(random.random() * 120 + 150)
+                sleep(random.random() * 180 + 30)
     driver.close()
 
 
